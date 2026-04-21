@@ -1,7 +1,7 @@
 import json
 import os
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
 
 # Paths
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "fly_patterns.json")
@@ -25,7 +25,14 @@ def get_vector_store():
         # Combine relevant fields for embedding
         text = f"{pattern['fly_name']}. Type: {pattern['type']}. Hatch: {pattern.get('hatch_conditions', '')}. Notes: {pattern.get('notes', '')}"
         docs.append(text)
-        metadatas.append(pattern)
+        safe_metadata = {}
+        for key, value in pattern.items():
+            if isinstance(value, (str, int, float, bool)) or value is None:
+                safe_metadata[key] = value
+            else:
+                # Chroma only accepts primitive metadata types.
+                safe_metadata[key] = json.dumps(value)
+        metadatas.append(safe_metadata)
     # Create or load ChromaDB
     db = Chroma.from_texts(docs, embeddings, metadatas=metadatas, persist_directory=CHROMA_PATH)
     return db
