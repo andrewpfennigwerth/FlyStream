@@ -1,32 +1,130 @@
 {
   "colorado_front_range": {
-    "waters": ["South Platte River", "Bear Creek", "Clear Creek", "Boulder Creek", "St. Vrain River"],
-    "dominant_species": ["brown_trout", "rainbow_trout"],
-    "description": "Urban and suburban trout streams in the foothills"
+    "waters": [
+      "South Platte River",
+      "Clear Creek",
+      "Boulder Creek",
+      "St. Vrain Creek",
+      "Bear Creek",
+      "Cache la Poudre River",
+      "Big Thompson River"
+    ],
+    "dominant_species": ["brown_trout", "rainbow_trout", "brook_trout"],
+    "description": "Urban and suburban tailwaters and freestone streams in the foothills east of the Divide. Many sections are heavily pressured — small flies and light tippet are often necessary.",
+    "notes": "South Platte tailwaters (Cheesman Canyon, Dream Stream, Deckers) are world-class but require technical presentation. Cache la Poudre is the only Wild and Scenic River in Colorado."
   },
   "colorado_rockies": {
-    "waters": ["Colorado River", "Roaring Fork River", "Fryingpan River", "Eagle River"],
+    "waters": [
+      "Colorado River (Upper)",
+      "Roaring Fork River",
+      "Fryingpan River",
+      "Eagle River",
+      "Gunnison River",
+      "Taylor River",
+      "Arkansas River",
+      "Blue River",
+      "Yampa River",
+      "Rio Grande (Upper)"
+    ],
     "dominant_species": ["cutthroat_trout", "brown_trout", "rainbow_trout"],
-    "description": "High mountain freestone rivers"
+    "description": "High mountain freestone rivers, tailwaters, and canyon streams in the Rocky Mountains. Mix of technical tailwaters and wild freestone water.",
+    "notes": "Fryingpan River below Ruedi Reservoir is one of the best tailwaters in the country — Mysis shrimp produce enormous trout. Arkansas River near Salida offers great public access and consistent hatches."
   },
-  "pacific_northwest": {
-    "waters": [" Deschutes River", "McKenzie River", "Rogue River", "Trout Creek"],
-    "dominant_species": ["rainbow_trout", "cutthroat_trout"],
-    "description": "Western Oregon and Washington rivers"
-  },
-  "appalachia": {
-    "waters": ["Shenandoah River", "James River", "New River", "Youghiogheny River"],
-    "dominant_species": ["brook_trout", "brown_trout", "rainbow_trout"],
-    "description": "Eastern mountain streams"
-  },
-  "rocky_mountains_general": {
-    "waters": ["Madison River", "Yellowstone River", "Gallatin River", "Bighorn River"],
+  "rocky_mountains_montana_wyoming": {
+    "waters": [
+      "Madison River",
+      "Yellowstone River",
+      "Gallatin River",
+      "Bighorn River",
+      "Missouri River",
+      "Bitterroot River",
+      "Clark Fork River",
+      "Blackfoot River",
+      "Henry's Fork (Snake River)",
+      "Lamar River",
+      "Gibbon River",
+      "Firehole River"
+    ],
     "dominant_species": ["brown_trout", "rainbow_trout", "cutthroat_trout"],
-    "description": "Wyoming and Montana rivers"
+    "description": "World-class trout rivers of Montana and Wyoming. Home to some of the highest-density wild trout fisheries in North America.",
+    "notes": "Missouri River below Holter Dam holds an estimated 5,000–7,000 trout per mile. Bighorn is a premier tailwater. Firehole and Gibbon are unique geothermal rivers in Yellowstone National Park."
   },
-  "midwest": {
-    "waters": ["Au Sable River", "Manistee River", "North Platte River", "White River"],
-    "dominant_species": ["brown_trout", "brook_trout"],
-    "description": "Great Lakes region trout streams"
+  "northeast_catskills_delaware": {
+    "waters": [
+      "Beaverkill River",
+      "Willowemoc Creek",
+      "Delaware River (West Branch)",
+      "Delaware River (East Branch)",
+      "Esopus Creek",
+      "Neversink River",
+      "Schoharie Creek",
+      "Battenkill River"
+    ],
+    "dominant_species": ["brown_trout", "rainbow_trout", "brook_trout"],
+    "description": "The birthplace of American dry fly fishing. Catskill streams are known for classic hatches — Hendricksons, Green Drakes, Sulphurs, and Tricos — and selective wild brown trout.",
+    "notes": "The Beaverkill and Willowemoc are historic rivers with deep ties to fly fishing tradition. Delaware tailwaters produce trophy browns and exceptional dry fly fishing from May through summer."
+  },
+  "northeast_pennsylvania": {
+    "waters": [
+      "Penns Creek",
+      "Letort Spring Run",
+      "Yellow Breeches Creek",
+      "Spring Creek",
+      "Brodhead Creek",
+      "Loyalsock Creek",
+      "Kettle Creek",
+      "Savage River"
+    ],
+    "dominant_species": ["brown_trout", "brook_trout", "rainbow_trout"],
+    "description": "Pennsylvania limestone spring creeks and freestone streams. Penns Creek hosts one of the most famous Green Drake hatches in the country. Spring creeks demand technical presentation.",
+    "notes": "Limestone spring creeks (Letort, Yellow Breeches, Spring Creek) stay cold year-round and host diverse hatches. Trout here are among the most selective in the eastern US — light tippet (5X–7X) is essential."
+  },
+  "northeast_new_england": {
+    "waters": [
+      "Farmington River (CT)",
+      "Swift River (MA)",
+      "Deerfield River (MA)",
+      "Rapid River (ME)",
+      "Androscoggin River (ME/NH)",
+      "Connecticut River (upper)",
+      "Batten Kill (VT)",
+      "West River (VT)",
+      "Housatonic River (CT)"
+    ],
+    "dominant_species": ["brown_trout", "rainbow_trout", "brook_trout", "landlocked_atlantic_salmon"],
+    "description": "New England tailwaters and freestone streams ranging from Connecticut to Maine. Mix of technical tailwaters and remote brook trout and landlocked salmon water.",
+    "notes": "Farmington River tailwater (CT) is a top destination with year-round fishing. Swift River (MA) is extremely technical — ultra-clear water demands 6X–7X tippet and precise presentation. Rapid River (ME) holds trophy wild brook trout."
+  },
+  "northeast_new_york_adirondacks": {
+    "waters": [
+      "Ausable River (West Branch)",
+      "Ausable River (East Branch)",
+      "Saranac River",
+      "Schroon River",
+      "Boreas River",
+      "St. Regis River",
+      "Salmon River"
+    ],
+    "dominant_species": ["brown_trout", "rainbow_trout", "brook_trout"],
+    "description": "Remote Adirondack freestone streams and rivers. Wild brook trout are the native species of choice. Salmon River offers world-class steelhead and salmon runs in the fall.",
+    "notes": "Adirondack brook trout streams are treasured for their wild, native fish in remote settings. Salmon River near Pulaski is one of the top steelhead fisheries in the eastern US during fall and winter."
+  },
+  "midwest_great_lakes": {
+    "waters": [
+      "Au Sable River (MI)",
+      "Manistee River (MI)",
+      "Pere Marquette River (MI)",
+      "Boardman River (MI)",
+      "Two Hearted River (MI)",
+      "Muskegon River (MI)",
+      "Brule River (WI)",
+      "Namekagon River (WI)",
+      "Driftless Area Streams (WI/MN)",
+      "North Platte River (NE)",
+      "White River (AR)"
+    ],
+    "dominant_species": ["brown_trout", "brook_trout", "rainbow_trout", "steelhead"],
+    "description": "Great Lakes region trout streams spanning Michigan, Wisconsin, and Minnesota. Michigan's Au Sable system is world-renowned for its wild brown trout and classic hatches.",
+    "notes": "Michigan's Au Sable and Pere Marquette are legendary rivers with a rich fly fishing history. The Driftless Area of southwestern Wisconsin offers surprisingly high-quality spring creek-style fishing with large wild brown trout in an unglaciated landscape."
   }
 }
