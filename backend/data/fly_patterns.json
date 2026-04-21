@@ -1,12 +1,110 @@
 [
   {
     "fly_name": "Pale Morning Dun",
-    "type": "dry fly",
-    "hook_size": "16-18",
-    "target_species": "trout",
-    "hatch_conditions": "Late spring through summer, water temps 55-65°F, calm mornings, clear water, slow to medium flows",
-    "regions": ["colorado", "pacific_northwest"],
-    "notes": "One of the most important mayfly hatches in the West.",
+    "type": "dry",
+    "hook_size": "14-20",
+    "hatch_conditions": "Spring and summer mayfly hatches, warmer water temperatures, clear to slightly stained water",
+    "regions": ["western_us", "rocky_mountains", "pacific_northwest"],
+    "notes": "Versatile mayfly imitation for PMD and similar hatches. Works in various sizes depending on local insects.",
     "tying_keywords": "PMD dry fly tying"
+  },
+  {
+    "fly_name": "Blue-Winged Olive",
+    "type": "dry",
+    "hook_size": "16-22",
+    "hatch_conditions": "Cooler months, overcast days, small mayfly hatches",
+    "regions": ["western_us", "eastern_us", "rocky_mountains"],
+    "notes": "Standard BWO pattern that works across many regions and conditions.",
+    "tying_keywords": "BWO dry fly tying"
+  },
+  {
+    "fly_name": "Adams Dry Fly",
+    "type": "dry",
+    "hook_size": "12-18",
+    "hatch_conditions": "General mayfly hatches, attractor pattern when specific insects unknown",
+    "regions": ["western_us", "eastern_us", "rocky_mountains", "appalachia"],
+    "notes": "Classic attractor dry fly that works in most trout waters and conditions.",
+    "tying_keywords": "Adams dry fly tying"
+  },
+  {
+    "fly_name": "Elk Hair Caddis",
+    "type": "dry",
+    "hook_size": "12-16",
+    "hatch_conditions": "Evening caddis activity, moderate flows",
+    "regions": ["western_us", "eastern_us", "rocky_mountains"],
+    "notes": "Essential caddis pattern that works in most trout streams with caddis populations.",
+    "tying_keywords": "Elk Hair Caddis tying"
+  },
+  {
+    "fly_name": "Prince Nymph",
+    "type": "nymph",
+    "hook_size": "10-16",
+    "hatch_conditions": "Year-round subsurface feeding, fast water and deep runs",
+    "regions": ["western_us", "eastern_us", "rocky_mountains", "appalachia"],
+    "notes": "Classic stonefly nymph imitation. One of the most versatile nymph patterns.",
+    "tying_keywords": "Prince Nymph tying"
+  },
+  {
+    "fly_name": "Zebra Midge",
+    "type": "nymph",
+    "hook_size": "16-22",
+    "hatch_conditions": "Winter and early spring, cold water, deep pools and tailwaters",
+    "regions": ["western_us", "rocky_mountains", "pacific_northwest"],
+    "notes": "Essential small fly pattern for winter fishing and selective trout.",
+    "tying_keywords": "Zebra Midge tying"
+  },
+  {
+    "fly_name": "Woolly Bugger",
+    "type": "streamer",
+    "hook_size": "6-12",
+    "hatch_conditions": "Year-round predatory feeding, various water conditions",
+    "regions": ["western_us", "eastern_us", "southeast", "midwest"],
+    "notes": "Versatile streamer that imitates baitfish, leeches, and other prey.",
+    "tying_keywords": "Woolly Bugger tying"
+  },
+  {
+    "fly_name": "San Juan Worm",
+    "type": "junk",
+    "hook_size": "8-14",
+    "hatch_conditions": "Winter and early spring, slow water and pools",
+    "regions": ["western_us", "eastern_us", "rocky_mountains"],
+    "notes": "Simple worm pattern effective when trout feed on aquatic worms.",
+    "tying_keywords": "San Juan Worm tying"
+  },
+  {
+    "fly_name": "Pheasant Tail Nymph",
+    "type": "nymph",
+    "hook_size": "12-18",
+    "hatch_conditions": "Year-round subsurface feeding, various flows and depths",
+    "regions": ["western_us", "eastern_us", "rocky_mountains", "appalachia"],
+    "notes": "Classic and versatile nymph pattern that works in most trout waters.",
+    "tying_keywords": "Pheasant Tail Nymph tying"
+  },
+  {
+    "fly_name": "Trout Slayer",
+    "type": "streamer",
+    "hook_size": "4-10",
+    "hatch_conditions": "Aggressive feeding periods, larger prey available",
+    "regions": ["western_us", "rocky_mountains", "pacific_northwest"],
+    "notes": "Large streamer pattern for targeting bigger trout.",
+    "tying_keywords": "Trout Slayer tying"
+  },
+  {
+    "fly_name": "Griffith's Gnat",
+    "type": "dry",
+    "hook_size": "18-24",
+    "hatch_conditions": "Midge activity, selective feeding on small insects",
+    "regions": ["western_us", "eastern_us", "rocky_mountains"],
+    "notes": "Tiny pattern for when trout are focused on midges and small flies.",
+    "tying_keywords": "Griffith's Gnat tying"
+  },
+  {
+    "fly_name": "Copper John",
+    "type": "nymph",
+    "hook_size": "12-18",
+    "hatch_conditions": "Deep water fishing, weighted nymphing",
+    "regions": ["western_us", "eastern_us", "rocky_mountains", "appalachia"],
+    "notes": "Heavy nymph that sinks quickly for deep presentations.",
+    "tying_keywords": "Copper John tying"
   }
 ]

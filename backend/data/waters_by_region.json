@@ -1,10 +1,32 @@
 {
   "colorado_front_range": {
-    "waters": ["South Platte River", "Bear Creek", "Clear Creek"],
-    "dominant_species": ["brown_trout", "rainbow_trout"]
+    "waters": ["South Platte River", "Bear Creek", "Clear Creek", "Boulder Creek", "St. Vrain River"],
+    "dominant_species": ["brown_trout", "rainbow_trout"],
+    "description": "Urban and suburban trout streams in the foothills"
   },
   "colorado_rockies": {
-    "waters": ["Colorado River", "Roaring Fork River"],
-    "dominant_species": ["cutthroat_trout", "brown_trout"]
+    "waters": ["Colorado River", "Roaring Fork River", "Fryingpan River", "Eagle River"],
+    "dominant_species": ["cutthroat_trout", "brown_trout", "rainbow_trout"],
+    "description": "High mountain freestone rivers"
+  },
+  "pacific_northwest": {
+    "waters": [" Deschutes River", "McKenzie River", "Rogue River", "Trout Creek"],
+    "dominant_species": ["rainbow_trout", "cutthroat_trout"],
+    "description": "Western Oregon and Washington rivers"
+  },
+  "appalachia": {
+    "waters": ["Shenandoah River", "James River", "New River", "Youghiogheny River"],
+    "dominant_species": ["brook_trout", "brown_trout", "rainbow_trout"],
+    "description": "Eastern mountain streams"
+  },
+  "rocky_mountains_general": {
+    "waters": ["Madison River", "Yellowstone River", "Gallatin River", "Bighorn River"],
+    "dominant_species": ["brown_trout", "rainbow_trout", "cutthroat_trout"],
+    "description": "Wyoming and Montana rivers"
+  },
+  "midwest": {
+    "waters": ["Au Sable River", "Manistee River", "North Platte River", "White River"],
+    "dominant_species": ["brown_trout", "brook_trout"],
+    "description": "Great Lakes region trout streams"
   }
 }
