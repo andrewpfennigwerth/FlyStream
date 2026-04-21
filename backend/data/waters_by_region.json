@@ -1,0 +1,10 @@
+{
+  "colorado_front_range": {
+    "waters": ["South Platte River", "Bear Creek", "Clear Creek"],
+    "dominant_species": ["brown_trout", "rainbow_trout"]
+  },
+  "colorado_rockies": {
+    "waters": ["Colorado River", "Roaring Fork River"],
+    "dominant_species": ["cutthroat_trout", "brown_trout"]
+  }
+}
