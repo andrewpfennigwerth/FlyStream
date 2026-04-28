@@ -7,8 +7,12 @@ from typing import Optional
 from dotenv import load_dotenv
 load_dotenv()  # Load environment variables from .env file
 
-from tools import search_fishing_report
-from vector_store import search_fly_patterns
+try:
+    from .tools import search_fishing_report
+    from .vector_store import search_fly_patterns
+except ImportError:  # Allows running agent.py directly from the backend directory.
+    from tools import search_fishing_report
+    from vector_store import search_fly_patterns
 # You may need to adjust the import for your Anthropic/Claude LLM wrapper
 from langchain_anthropic import ChatAnthropic
 
@@ -562,7 +566,7 @@ def recommend_flies(
 # Example usage for testing
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
-    result = recommend_flies("Farmington, CT")
+    result = recommend_flies("Boulder, CO")
     print("\nFlies By Type:\n", result["flies_by_type"])
     print("\nFly Box:", result["fly_box"])
     print("\nWaters Considered:", result["waters"])
