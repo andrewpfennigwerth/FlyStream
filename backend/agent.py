@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import os
 import re
 from typing import Optional
@@ -13,6 +14,20 @@ from langchain_anthropic import ChatAnthropic
 
 WATERS_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "waters_by_region.json")
 FLY_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "fly_patterns.json")
+EXCLUDED_FLY_NAMES = {"Trout Slayer"}
+ANTHROPIC_MODEL = "claude-sonnet-4-6"
+DEFAULT_QUOTAS = {"dry": 4, "nymph": 4, "streamer": 4, "junk": 3}
+WATERS_REGION_TO_FLY_TAGS = {
+    "rocky_mountains_montana_wyoming": ["rocky_mountains", "western_us"],
+    "colorado_front_range": ["colorado", "rocky_mountains"],
+    "colorado_rockies": ["colorado", "rocky_mountains"],
+    "northeast_new_england": ["northeast"],
+    "northeast_catskills_delaware": ["northeast", "appalachia"],
+    "northeast_new_york_adirondacks": ["northeast"],
+    "northeast_pennsylvania": ["northeast", "appalachia"],
+    "midwest_great_lakes": ["midwest"],
+}
+logger = logging.getLogger(__name__)
 
 
 def load_waters_data():
@@ -186,7 +201,7 @@ def unique_fly_patterns(fly_patterns):
     seen_names = set()
     for pattern in fly_patterns:
         fly_name = pattern.get("fly_name")
-        if not fly_name or fly_name in seen_names:
+        if not fly_name or fly_name in seen_names or fly_name in EXCLUDED_FLY_NAMES:
             continue
         seen_names.add(fly_name)
         unique.append(pattern)
@@ -202,6 +217,242 @@ def prioritize_fly_patterns(unique_patterns, mentioned_flies):
     remaining = [p for p in unique_patterns if p.get("fly_name") not in mentioned_set]
     return confirmed + remaining
 
+
+def group_top_flies_by_type(fly_patterns, top_n_per_type=3):
+    """Group patterns by type and keep top N per type."""
+    grouped = {}
+    for pattern in fly_patterns:
+        fly_type = pattern.get("type", "unknown")
+        if fly_type not in grouped:
+            grouped[fly_type] = []
+        if len(grouped[fly_type]) < top_n_per_type:
+            grouped[fly_type].append(pattern)
+    return grouped
+
+
+def enforce_type_diversity(
+    ranked_patterns,
+    base_query,
+    top_n_per_type=3,
+    target_types=None,
+    search_fn=None,
+    debug_logs=False,
+):
+    """Backfill missing core fly types from type-targeted retrieval."""
+    if target_types is None:
+        target_types = ["dry", "nymph", "streamer", "junk"]
+    if search_fn is None:
+        search_fn = search_fly_patterns
+
+    selected = []
+    seen = set()
+    for pattern in ranked_patterns:
+        fly_name = pattern.get("fly_name")
+        if fly_name and fly_name not in seen and fly_name not in EXCLUDED_FLY_NAMES:
+            selected.append(pattern)
+            seen.add(fly_name)
+
+    grouped = group_top_flies_by_type(selected, top_n_per_type=top_n_per_type)
+    for fly_type in target_types:
+        while len(grouped.get(fly_type, [])) < top_n_per_type:
+            type_query = f"{base_query}. effective {fly_type} fly patterns"
+            candidates = search_fn(type_query, k=max(top_n_per_type * 5, 10))
+            if debug_logs:
+                candidate_preview = [
+                    {
+                        "fly_name": candidate.get("fly_name"),
+                        "type": candidate.get("type"),
+                    }
+                    for candidate in candidates[:10]
+                ]
+                logger.info(
+                    "Type backfill query=%s candidate_count=%s candidates=%s",
+                    fly_type,
+                    len(candidates),
+                    candidate_preview,
+                )
+            added = False
+            for candidate in candidates:
+                candidate_name = candidate.get("fly_name")
+                if (
+                    candidate.get("type") == fly_type
+                    and candidate_name
+                    and candidate_name not in seen
+                    and candidate_name not in EXCLUDED_FLY_NAMES
+                ):
+                    selected.append(candidate)
+                    seen.add(candidate_name)
+                    added = True
+                    break
+            if not added:
+                break
+            grouped = group_top_flies_by_type(selected, top_n_per_type=top_n_per_type)
+
+    return flatten_grouped_flies(grouped)
+
+
+def flatten_grouped_flies(grouped_flies):
+    """Flatten grouped fly patterns preserving grouped order."""
+    flat = []
+    for fly_type in sorted(grouped_flies.keys()):
+        flat.extend(grouped_flies[fly_type])
+    return flat
+
+
+def pattern_matches_region(pattern, region_tags):
+    """Return True if the pattern's regions overlap any of the given tags."""
+    if not region_tags:
+        return False
+    raw = pattern.get("regions")
+    if not raw:
+        return False
+    if isinstance(raw, str):
+        try:
+            regions = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            return False
+    elif isinstance(raw, list):
+        regions = raw
+    else:
+        return False
+    return any(tag in regions for tag in region_tags)
+
+
+def select_fly_box_with_quotas(
+    base_query,
+    report_fly_mentions,
+    region_tags,
+    quotas=None,
+    search_fn=None,
+    debug_logs=False,
+):
+    """Pick flies per type, scoring by report mentions + region match + similarity rank."""
+    quotas = quotas or DEFAULT_QUOTAS
+    if search_fn is None:
+        search_fn = search_fly_patterns
+
+    selected = []
+    seen_names = set()
+    mentioned = set(report_fly_mentions or [])
+
+    for fly_type, target in quotas.items():
+        candidates = search_fn(base_query, k=20, type_filter=fly_type)
+        scored = []
+        for idx, candidate in enumerate(candidates):
+            name = candidate.get("fly_name")
+            if not name or name in seen_names or name in EXCLUDED_FLY_NAMES:
+                continue
+            if candidate.get("type") != fly_type:
+                continue
+            score = 0.0
+            if name in mentioned:
+                score += 10
+            if pattern_matches_region(candidate, region_tags):
+                score += 3
+            score += (len(candidates) - idx) * 0.1
+            scored.append((score, idx, candidate))
+
+        scored.sort(key=lambda s: (-s[0], s[1]))
+        picks = []
+        for _, _, candidate in scored:
+            if len(picks) >= target:
+                break
+            name = candidate.get("fly_name")
+            if name in seen_names:
+                continue
+            picks.append(candidate)
+            seen_names.add(name)
+
+        selected.extend(picks)
+        if debug_logs:
+            logger.info(
+                "Quota fill type=%s filled=%s/%s picks=%s",
+                fly_type,
+                len(picks),
+                target,
+                [p.get("fly_name") for p in picks],
+            )
+
+    return selected
+
+
+def _safe_json_object(content):
+    """Best-effort extraction of the first JSON object from a string."""
+    if not isinstance(content, str):
+        return {}
+    try:
+        return json.loads(content)
+    except (json.JSONDecodeError, TypeError):
+        pass
+    match = re.search(r"\{.*\}", content, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(0))
+        except (json.JSONDecodeError, TypeError):
+            return {}
+    return {}
+
+
+def verify_and_rerank_with_llm(grouped_flies, fly_names, location, region_tags=None):
+    """Reorder-only LLM pass.
+
+    The LLM may only reorder flies within each type. It cannot add, remove, or
+    move flies between types. Any parse failure preserves the original order.
+    """
+    llm = ChatAnthropic(model=ANTHROPIC_MODEL)
+    available_by_type = {
+        fly_type: [p.get("fly_name") for p in patterns if p.get("fly_name")]
+        for fly_type, patterns in grouped_flies.items()
+    }
+    prompt = (
+        "You are reordering a fly fishing fly box.\n"
+        "Rules:\n"
+        "- Keep exactly the same flies and the same per-type counts.\n"
+        "- Only reorder within each type, most likely to be effective first.\n"
+        "- Do not invent flies.\n"
+        "- Use only the names provided per type.\n\n"
+        "Respond with strict JSON only, matching this schema:\n"
+        '{"by_type": {"dry": ["..."], "nymph": ["..."], "streamer": ["..."], "junk": ["..."]}}\n\n'
+        f"Location: {location}\n"
+        f"Region tags: {region_tags or []}\n"
+        f"Report mentions: {fly_names}\n"
+        f"Flies by type: {available_by_type}\n"
+    )
+    response = llm.invoke(prompt)
+    content = response.content if hasattr(response, "content") else str(response)
+    if isinstance(content, list):
+        content = "".join(
+            part.get("text", str(part)) if isinstance(part, dict) else str(part)
+            for part in content
+        )
+    parsed = _safe_json_object(content)
+    by_type = parsed.get("by_type", {}) if isinstance(parsed, dict) else {}
+
+    pattern_lookup = {
+        p.get("fly_name"): p
+        for patterns in grouped_flies.values()
+        for p in patterns
+        if p.get("fly_name")
+    }
+
+    reordered = {}
+    for fly_type, patterns in grouped_flies.items():
+        original_names = [p.get("fly_name") for p in patterns if p.get("fly_name")]
+        proposed = by_type.get(fly_type, []) if isinstance(by_type, dict) else []
+        kept = []
+        seen = set()
+        for name in proposed:
+            if name in original_names and name not in seen:
+                kept.append(name)
+                seen.add(name)
+        for name in original_names:
+            if name not in seen:
+                kept.append(name)
+                seen.add(name)
+        reordered[fly_type] = [pattern_lookup[name] for name in kept if name in pattern_lookup]
+
+    return reordered
+
 def get_seasonal_hint():
     """Return a string describing the current month/season for prompt biasing."""
     now = datetime.datetime.now()
@@ -209,72 +460,114 @@ def get_seasonal_hint():
     # Optionally, map month to season
     return f"Month: {month}"
 
-def recommend_flies(location: str, max_waters=3, max_reports=2, fly_box_size=6):
-    """
-    Main agent workflow: returns a guide-like fly box recommendation for a location.
-    """
+def recommend_flies(
+    location: str,
+    max_waters=3,
+    max_reports=2,
+    fly_box_size=15,
+    use_llm_verification=True,
+    quotas=None,
+    debug_logs=True,
+):
+    """Main agent workflow: returns a quota-balanced fly box for a location."""
+    quotas = quotas or DEFAULT_QUOTAS
     waters_data = load_waters_data()
     fly_catalog = build_fly_catalog()
     region = map_location_to_region(location)
     waters = get_waters(location, waters_data, max_waters=max_waters)
+    region_tags = WATERS_REGION_TO_FLY_TAGS.get(region, [])
+    search_call_count = 0
+
+    def tracked_search(query_text, k=3, type_filter=None):
+        nonlocal search_call_count
+        search_call_count += 1
+        return search_fly_patterns(query_text, k=k, type_filter=type_filter)
+
+    if debug_logs:
+        logger.info(
+            "Recommendation start location=%s region=%s region_tags=%s waters=%s",
+            location,
+            region,
+            region_tags,
+            waters,
+        )
     if not waters:
         return {"error": f"No region mapping or waters found for {location}."}
 
-    # 2. Get recent reports for curated waters
     all_reports = []
     for water in waters:
         report_text = search_fishing_report.invoke(water)
-        # Split into individual reports
         reports = report_text.split('---')[:max_reports]
         all_reports.extend(reports)
 
-    # 3. Extract fly names from reports
     fly_names = extract_fly_names_from_reports(all_reports, fly_catalog)
-    # 4. Build strong region query + seasonal context
     seasonal_hint = get_seasonal_hint()
     region_data = waters_data.get(region, {})
     query = build_query(region_data, seasonal_hint)
     if fly_names:
         query = f"{query} {' '.join(fly_names)}"
+    if debug_logs:
+        logger.info("RAG query=%s", query)
+        logger.info("Report fly mentions=%s", fly_names)
 
-    # 5. Query vector store for recommended flies
-    # Pull extra candidates so dedupe/prioritization can still fill fly_box_size.
-    raw_patterns = search_fly_patterns(query, k=max(fly_box_size * 3, fly_box_size))
-    unique_patterns = unique_fly_patterns(raw_patterns)
-    ranked_patterns = prioritize_fly_patterns(unique_patterns, fly_names)
-    fly_patterns = ranked_patterns[:fly_box_size]
-
-    # 6. Synthesize a guide-like recommendation with Claude
-    llm = ChatAnthropic(model="claude-sonnet-4-6")
-    fly_list = "\n".join([f"- {f['fly_name']} ({f['type']})" for f in fly_patterns])
-    prompt = (
-        f"You are a friendly, seasoned, realistic fly fishing guide. Based on recent reports and the current season, "
-        f"here are the flies you should have in your box for {location}. These are commonly mentioned and effective now, "
-        f"but conditions can change quickly—so bring a variety!\n\n"
-        f"Recommended fly box:\n{fly_list}\n\n"
-        f"These recommendations are based on recent reports and typical seasonal hatches, not on exact current water conditions.\n\n"
-        f"If you want to add a short tip or encouragement, do so in a single sentence at the end."
+    selected = select_fly_box_with_quotas(
+        base_query=query,
+        report_fly_mentions=fly_names,
+        region_tags=region_tags,
+        quotas=quotas,
+        search_fn=tracked_search,
+        debug_logs=debug_logs,
     )
-    response = llm.invoke(prompt)
-    guide_text = response.content if hasattr(response, "content") else str(response)
+
+    grouped_patterns = group_top_flies_by_type(
+        selected, top_n_per_type=max(quotas.values())
+    )
+
+    verification = {"used_llm": False, "fallback_used": False}
+    if use_llm_verification:
+        try:
+            grouped_patterns = verify_and_rerank_with_llm(
+                grouped_patterns, fly_names, location, region_tags=region_tags
+            )
+            verification["used_llm"] = True
+        except Exception:
+            verification["fallback_used"] = True
+    if debug_logs:
+        logger.info("Verification=%s", verification)
+
+    flat_final = flatten_grouped_flies(grouped_patterns)[:fly_box_size]
+    if debug_logs:
+        logger.info("Final flies by type=%s", grouped_patterns)
+        logger.info("Vector search calls this request=%s", search_call_count)
     return {
         "location": location,
         "region": region,
+        "region_tags": region_tags,
         "waters": waters,
-        "fly_box": [f["fly_name"] for f in fly_patterns],
-        "fly_types": [f["type"] for f in fly_patterns],
+        "flies_by_type": {
+            fly_type: [
+                {"fly_name": f.get("fly_name"), "type": f.get("type")}
+                for f in patterns
+            ]
+            for fly_type, patterns in grouped_patterns.items()
+        },
+        "fly_box": [f.get("fly_name") for f in flat_final],
+        "fly_types": [f.get("type") for f in flat_final],
         "report_fly_mentions": fly_names,
         "raw_reports": all_reports,
         "rag_query": query,
-        "guide_message": str(response)
+        "verification": verification,
     }
 
 # Example usage for testing
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
     result = recommend_flies("Farmington, CT")
-    print("\nGuide Recommendation:\n", result["guide_message"])
+    print("\nFlies By Type:\n", result["flies_by_type"])
     print("\nFly Box:", result["fly_box"])
     print("\nWaters Considered:", result["waters"])
+    print("\nRAG Query:", result["rag_query"])
+    print("\nVerification:", result["verification"])
     
 # Placeholder for LangGraph agent
 # This will contain the agent logic, tools, and state graph
