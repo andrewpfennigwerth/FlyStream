@@ -27,6 +27,10 @@ htmlcov/
 .hypothesis/
 .ipynb_checkpoints/
 
+# Vector store artifacts (no longer used)
+backend/chroma_db/
+backend/chroma_db_backup/
+
 # Env files
 .env
 .env.*
