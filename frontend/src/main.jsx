@@ -1,22 +1,38 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import dryIcon from './storage/dry.png';
+import flystreamLogo from './storage/flystream-logo.svg';
+import junkIcon from './storage/junk.png';
+import nymphIcon from './storage/nymph.png';
+import streamerIcon from './storage/streamer.png';
+import ShaderBackground from './ShaderBackground';
 import './styles.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const FLY_TYPE_ICONS = {
+  dry: dryIcon,
+  junk: junkIcon,
+  nymph: nymphIcon,
+  streamer: streamerIcon,
+};
 
 function FlyList({ title, flies }) {
   if (!flies?.length) {
     return null;
   }
 
+  const icon = FLY_TYPE_ICONS[title.toLowerCase()];
+
   return (
     <section className="card">
-      <h3>{title}</h3>
+      <div className="fly-card-header">
+        {icon && <img src={icon} alt="" aria-hidden="true" />}
+        <h3>{title}</h3>
+      </div>
       <ul className="fly-list">
         {flies.map((fly) => (
           <li key={`${title}-${fly.fly_name}`}>
             <span>{fly.fly_name}</span>
-            {fly.type && <small>{fly.type}</small>}
           </li>
         ))}
       </ul>
@@ -59,76 +75,71 @@ function App() {
   const fliesByType = result?.flies_by_type || {};
 
   return (
-    <main className="app">
-      <section className="hero">
-        <p className="eyebrow">FlyStream</p>
-        <h1>Find a focused fly box for your next trout trip.</h1>
-        <form onSubmit={handleSubmit} className="search-form">
-          <label htmlFor="location">Destination</label>
-          <div className="input-row">
-            <input
-              id="location"
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              placeholder="Farmington, CT"
-              required
-            />
-            <button type="submit" disabled={isLoading}>
-              {isLoading ? 'Finding flies...' : 'Recommend flies'}
-            </button>
+    <>
+      <ShaderBackground />
+      <main className="app">
+        <section className="hero">
+          <div className="brand">
+            <img src={flystreamLogo} alt="FlyStream logo" />
+            <span>FlyStream</span>
           </div>
-        </form>
-      </section>
-
-      {error && <p className="error">{error}</p>}
-
-      {result && (
-        <section className="results">
-          <div className="summary">
-            <div>
-              <p className="eyebrow">Recommendations for</p>
-              <h2>{result.location}</h2>
+          <h1>Find a focused fly box for your next trip.</h1>
+          <form onSubmit={handleSubmit} className="search-form">
+            <label htmlFor="location">Destination</label>
+            <div className="input-row">
+              <input
+                id="location"
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+                placeholder="Farmington, CT"
+                required
+              />
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? 'Finding flies...' : 'Recommend flies'}
+              </button>
             </div>
-            {result.region && <span className="pill">{result.region.replaceAll('_', ' ')}</span>}
-          </div>
-
-          {!!result.waters?.length && (
-            <section className="card">
-              <h3>Waters Checked</h3>
-              <div className="chips">
-                {result.waters.map((water) => (
-                  <span key={water}>{water}</span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {!!result.fly_box?.length && (
-            <section className="card">
-              <h3>Fly Box</h3>
-              <div className="chips">
-                {result.fly_box.map((flyName) => (
-                  <span key={flyName}>{flyName}</span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <div className="grid">
-            {Object.entries(fliesByType).map(([type, flies]) => (
-              <FlyList key={type} title={type} flies={flies} />
-            ))}
-          </div>
-
-          {result.verification && (
-            <p className="meta">
-              Verification: {result.verification.used_llm ? 'LLM checked' : 'local ranking'}
-              {result.verification.fallback_used ? ', fallback used' : ''}
-            </p>
-          )}
+          </form>
         </section>
-      )}
-    </main>
+
+        {error && <p className="error">{error}</p>}
+
+        {result && (
+          <section className="results">
+            <div className="summary">
+              <div>
+                <p className="eyebrow">Recommendations for</p>
+                <h2>{result.location}</h2>
+              </div>
+              {result.region && <span className="pill">{result.region.replaceAll('_', ' ')}</span>}
+            </div>
+
+            {!!result.waters?.length && (
+              <section className="card">
+                <h3>Waters Refrenced</h3>
+                <div className="chips">
+                  {result.waters.map((water) => (
+                    <span key={water}>{water}</span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <div className="grid">
+              {Object.entries(fliesByType).map(([type, flies]) => (
+                <FlyList key={type} title={type} flies={flies} />
+              ))}
+            </div>
+
+            {result.verification && (
+              <p className="meta">
+                Verification: {result.verification.used_llm ? 'LLM checked' : 'local ranking'}
+                {result.verification.fallback_used ? ', fallback used' : ''}
+              </p>
+            )}
+          </section>
+        )}
+      </main>
+    </>
   );
 }
 
