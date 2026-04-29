@@ -55,19 +55,19 @@ input {
 
 .brand {
   align-items: center;
-  color: #173d2e;
+  color: #000000;
   display: flex;
-  font-size: 0.95rem;
-  font-weight: 900;
-  gap: 10px;
-  letter-spacing: 0.08em;
+  font-size: 1.1rem;
+  font-weight: 500;
+  gap: 1px;
+  letter-spacing: 0.02rem;
   margin-bottom: 18px;
   text-transform: uppercase;
 }
 
 .brand img {
-  height: 44px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
 }
 
 .eyebrow {
