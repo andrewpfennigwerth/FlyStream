@@ -40,17 +40,81 @@ function FlyList({ title, flies }) {
   );
 }
 
+const INTRO_SEEN_KEY = 'flystream:introSeen';
+
+function hasSeenIntro() {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+  try {
+    return window.sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
+  } catch (storageError) {
+    return false;
+  }
+}
+
+function markIntroSeen() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  try {
+    window.sessionStorage.setItem(INTRO_SEEN_KEY, 'true');
+  } catch (storageError) {
+    // Storage may be unavailable (private mode, etc.) — fall back silently.
+  }
+}
+
+function IntroModal({ onClose }) {
+  return (
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="intro-modal-title">
+      <div className="modal">
+        <h2 id="intro-modal-title" className="modal-title">A quick heads up</h2>
+        <ul className="modal-list">
+          <li>
+            The backend runs on a free Render instance and goes to sleep when idle. The first
+            request can take about a minute to wake it up — after that, recommendations come back quickly.
+          </li>
+          <li>
+            Not every location is supported yet. The curated regions are still expanding, so some
+            destinations may not return results.
+          </li>
+          <li>
+            Curious how the recommendations work? Check out the project on{' '}
+            <a
+              href="https://github.com/andrewpfennigwerth/flystream"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              GitHub
+            </a>
+            .
+          </li>
+        </ul>
+        <button type="button" className="modal-button" onClick={onClose}>
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [location, setLocation] = useState('Farmington, CT');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
     setResult(null);
     setIsLoading(true);
+
+    if (!hasSeenIntro()) {
+      markIntroSeen();
+      setShowIntro(true);
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/recommend`, {
@@ -77,6 +141,7 @@ function App() {
   return (
     <>
       <ShaderBackground />
+      {showIntro && <IntroModal onClose={() => setShowIntro(false)} />}
       <main className="app">
         <section className="hero">
           <div className="brand">
